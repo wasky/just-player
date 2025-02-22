@@ -7,14 +7,23 @@ android {
     compileSdk 35
     ndkVersion '21.4.7075529'
 
+    signingConfigs {
+        debug {
+            storeFile = file("${rootProject.projectDir}/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         def abiFilter = project.findProperty("abiFilter")
-        applicationId "com.brouken.player"
+        applicationId "com.brouken.player.subtitle"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 190
         versionName "0.${versionCode}"
-        archivesBaseName = "Just.Player.v${versionName}"
+        archivesBaseName = "Just.Player.SubtitlePreview"
         if (abiFilter) {
             def abiCodeMap = ["x86": 1, "x86_64": 2, "armeabi-v7a": 3, "arm64-v8a": 4]
             versionCode = versionCode * 10 + abiCodeMap[abiFilter]
@@ -24,9 +33,13 @@ android {
         }
     }
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.debug
+        }
         release {
-            minifyEnabled false
-            //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.debug
         }
     }
     flavorDimensions "targetSdk", "distribution"

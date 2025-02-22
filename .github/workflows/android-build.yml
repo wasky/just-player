@@ -2,8 +2,7 @@ name: Android Build APK
 
 on:
   push:
-    tags:
-      - 'v0.*'
+    branches: [ osd-settings-subtitles-preview-release ]
 
 jobs:
   build:
@@ -18,19 +17,15 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${GITHUB_WORKSPACE}/keystore.jks
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
 
-      - run: ./gradlew assembleRelease bundleRelease
-          -Pandroid.injected.signing.store.file=${GITHUB_WORKSPACE}/keystore.jks
-          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }}
-          -Pandroid.injected.signing.key.alias=key
-          -Pandroid.injected.signing.key.password=${{ secrets.KEYSTORE_PASSWORD }}
+      - run: ./gradlew clean :app:assembleLatestUniversalRelease
 
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             app/build/outputs/apk/latestUniversal/release/*.apk
-            app/build/outputs/apk/legacyUniversal/release/*.apk
           prerelease: true
           draft: true
 
@@ -40,3 +35,4 @@ jobs:
           path: |
             app/build/outputs/apk/*/release/*.apk
             app/build/outputs/bundle/*/*.aab
+            app/build/outputs/mapping/latestUniversalRelease/mapping.txt
