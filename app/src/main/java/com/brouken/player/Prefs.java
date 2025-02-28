@@ -12,6 +12,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.ui.AspectRatioFrameLayout;
 
 import com.brouken.player.osd.subtitle.SubtitleEdgeType;
+import com.brouken.player.osd.subtitle.SubtitleTypeface;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -50,7 +51,7 @@ public class Prefs {
     private static final String PREF_KEY_MAP_DV7 = "mapDV7ToHevc";
     private static final String PREF_KEY_LANGUAGE_AUDIO = "languageAudio";
     static final String PREF_KEY_SUBTITLE_STYLE_EMBEDDED = "subtitleStyleEmbedded";
-    static final String PREF_KEY_SUBTITLE_STYLE_BOLD = "subtitleStyleBold";
+    static final String PREF_KEY_SUBTITLE_TYPEFACE = "subtitleTypeface";
     static final String PREF_KEY_SUBTITLE_VERTICAL_POSITION = "subtitleVerticalPosition";
     static final String PREF_KEY_SUBTITLE_SIZE = "subtitleSize";
     static final String PREF_KEY_SUBTITLE_EDGE_TYPE = "subtitleEdgeType";
@@ -87,10 +88,10 @@ public class Prefs {
     public boolean mapDV7ToHevc = false;
     public String languageAudio = TRACK_DEVICE;
     public boolean subtitleStyleEmbedded = true;
-    public boolean subtitleStyleBold = false;
     public int subtitleVerticalPosition = 0;
     public int subtitleSize = 0;
     public SubtitleEdgeType subtitleEdgeType = SubtitleEdgeType.Default;
+    public SubtitleTypeface subtitleTypeface = SubtitleTypeface.Regular;
 
     private LinkedHashMap positions;
 
@@ -148,10 +149,10 @@ public class Prefs {
         mapDV7ToHevc = mSharedPreferences.getBoolean(PREF_KEY_MAP_DV7, mapDV7ToHevc);
         languageAudio = mSharedPreferences.getString(PREF_KEY_LANGUAGE_AUDIO, languageAudio);
         subtitleStyleEmbedded = mSharedPreferences.getBoolean(PREF_KEY_SUBTITLE_STYLE_EMBEDDED, subtitleStyleEmbedded);
-        subtitleStyleBold = mSharedPreferences.getBoolean(PREF_KEY_SUBTITLE_STYLE_BOLD, subtitleStyleBold);
         subtitleVerticalPosition = mSharedPreferences.getInt(PREF_KEY_SUBTITLE_VERTICAL_POSITION, subtitleVerticalPosition);
         subtitleSize = mSharedPreferences.getInt(PREF_KEY_SUBTITLE_SIZE, subtitleSize);
         subtitleEdgeType = valueOfEnum(SubtitleEdgeType.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_EDGE_TYPE, null), subtitleEdgeType);
+        subtitleTypeface = valueOfEnum(SubtitleTypeface.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_TYPEFACE, null), subtitleTypeface);
     }
 
     public void updateMedia(final Context context, final Uri uri, final String type) {
@@ -352,10 +353,10 @@ public class Prefs {
         sharedPreferencesEditor.apply();
     }
 
-    public void updateSubtitleStyleBold(final boolean subtitleStyleBold) {
-        this.subtitleStyleBold = subtitleStyleBold;
+    public void updateSubtitleTypeface(final SubtitleTypeface subtitleTypeface) {
+        this.subtitleTypeface = subtitleTypeface;
         final SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(PREF_KEY_SUBTITLE_STYLE_BOLD, subtitleStyleBold);
+        sharedPreferencesEditor.putString(PREF_KEY_SUBTITLE_TYPEFACE, subtitleTypeface.name());
         sharedPreferencesEditor.apply();
     }
 
