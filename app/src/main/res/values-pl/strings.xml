@@ -67,6 +67,7 @@
     <string name="osd_subtitle_edge_type_depressed">Obniżone</string>
     <string name="osd_subtitle_typeface_title">Styl</string>
     <string name="osd_subtitle_typeface_regular">Zwykły</string>
+    <string name="osd_subtitle_typeface_medium">Średni</string>
     <string name="osd_subtitle_typeface_bold">Pogrubiony</string>
     <string name="osd_subtitle_embedded_styles_title">Wbudowane style</string>
     <string name="osd_subtitle_caption_preferences_title">@string/pref_captioning_preferences</string>
