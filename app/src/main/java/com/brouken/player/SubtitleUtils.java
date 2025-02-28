@@ -1,8 +1,12 @@
 package com.brouken.player;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Typeface;
+import android.graphics.fonts.FontStyle;
 import android.net.Uri;
+import android.os.Build;
 import android.view.accessibility.CaptioningManager;
 
 import androidx.documentfile.provider.DocumentFile;
@@ -13,6 +17,7 @@ import androidx.media3.ui.CaptionStyleCompat;
 import androidx.media3.ui.SubtitleView;
 
 import com.brouken.player.osd.subtitle.SubtitleEdgeType;
+import com.brouken.player.osd.subtitle.SubtitleTypeface;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -337,6 +342,25 @@ class SubtitleUtils {
                 return CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
             default:
                 throw new IllegalArgumentException("Unknown subtitleEdgeType: " + subtitleEdgeType);
+        }
+    }
+
+    @SuppressLint("InlinedApi")
+    public static Typeface getSubtitleTypeface(SubtitleTypeface subtitleTypeface, CaptionStyleCompat userCaptionStyle) {
+        Typeface userTypeface = userCaptionStyle.typeface != null ? userCaptionStyle.typeface : Typeface.DEFAULT;
+        switch (subtitleTypeface) {
+            case Regular:
+                return Typeface.create(userTypeface, Typeface.NORMAL);
+            case Medium:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    return Typeface.create(userTypeface, FontStyle.FONT_WEIGHT_MEDIUM, false);
+                } else {
+                    return Typeface.create(userTypeface, Typeface.NORMAL);
+                }
+            case Bold:
+                return Typeface.create(userTypeface, Typeface.BOLD);
+            default:
+                throw new IllegalArgumentException("Unknown subtitleTypeface: "+subtitleTypeface);
         }
     }
 }
