@@ -3,6 +3,7 @@ package com.brouken.player.osd.subtitle;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -15,6 +16,8 @@ import com.brouken.player.osd.item.ChoiceOsdSettingsItem;
 import com.brouken.player.osd.item.IntegerOsdSettingsItem;
 import com.brouken.player.osd.item.OsdSettingsItem;
 import com.brouken.player.osd.item.SimpleOsdSettingsItem;
+
+import java.util.ArrayList;
 
 public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
 
@@ -99,20 +102,27 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
     private OsdSettingsItem createTypefaceItem(SubtitleTypeface typeface) {
         String title = context.getString(R.string.osd_subtitle_typeface_title);
 
-        ChoiceOsdSettingsItem.Element[] elements = new ChoiceOsdSettingsItem.Element[SubtitleTypeface.values().length];
-        for (int i = 0; i < elements.length; i++) {
+        ArrayList<ChoiceOsdSettingsItem.Element> elementList = new ArrayList<>(SubtitleTypeface.values().length);
+        for (int i = 0; i < SubtitleTypeface.values().length; i++) {
             switch (SubtitleTypeface.values()[i]) {
                 case Regular:
-                    elements[i] = new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_typeface_regular));
+                    elementList.add(new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_typeface_regular)));
+                    break;
+                case Medium:
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        elementList.add(new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_typeface_medium)));
+                    }
                     break;
                 case Bold:
-                    elements[i] = new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_typeface_bold));
+                    elementList.add(new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_typeface_bold)));
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown SubtitleTypeface: " + SubtitleEdgeType.values()[i]);
             }
         }
 
+        ChoiceOsdSettingsItem.Element[] elements = new ChoiceOsdSettingsItem.Element[elementList.size()];
+        elementList.toArray(elements);
         ChoiceOsdSettingsItem.Listener itemListener = (position, newValueIndex) -> listener.onSubtitleTypefaceChange(SubtitleTypeface.values()[newValueIndex]);
         return new ChoiceOsdSettingsItem(title, elements, typeface.ordinal(), itemListener, this);
     }

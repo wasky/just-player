@@ -69,6 +69,7 @@
     <string name="osd_subtitle_edge_type_depressed">Depressed</string>
     <string name="osd_subtitle_typeface_title">Typeface</string>
     <string name="osd_subtitle_typeface_regular">Regular</string>
+    <string name="osd_subtitle_typeface_medium">Medium</string>
     <string name="osd_subtitle_typeface_bold">Bold</string>
     <string name="osd_subtitle_embedded_styles_title">Embedded styles</string>
     <string name="osd_subtitle_caption_preferences_title">@string/pref_captioning_preferences</string>
