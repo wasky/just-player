@@ -1954,20 +1954,22 @@ public class PlayerActivity extends Activity {
             final CaptioningManager.CaptionStyle userStyle = captioningManager.getUserStyle();
             final CaptionStyleCompat userStyleCompat = CaptionStyleCompat.createFromCaptionStyle(userStyle);
             final int edgeColor = userStyle.hasEdgeColor() ? userStyleCompat.edgeColor : Color.BLACK;
+            final Typeface typeface = SubtitleUtils.getSubtitleTypeface(mPrefs.subtitleTypeface, userStyleCompat);
             final CaptionStyleCompat captionStyle = new CaptionStyleCompat(
                     userStyle.hasForegroundColor() ? userStyleCompat.foregroundColor : Color.WHITE,
                     userStyle.hasBackgroundColor() ? userStyleCompat.backgroundColor : Color.TRANSPARENT,
                     userStyle.hasWindowColor() ? userStyleCompat.windowColor : Color.TRANSPARENT,
                     SubtitleUtils.getSubtitleEdgeType(mPrefs.subtitleEdgeType, userStyle),
                     edgeColor,
-                    Typeface.create(userStyleCompat.typeface != null ? userStyleCompat.typeface : Typeface.DEFAULT,
-                            mPrefs.subtitleStyleBold ? Typeface.BOLD : Typeface.NORMAL));
+                    typeface);
+
             subtitleView.setStyle(captionStyle);
             subtitleView.setApplyEmbeddedStyles(mPrefs.subtitleStyleEmbedded);
             updateSubtitleBottomPaddingFraction(mPrefs.subtitleVerticalPosition);
             SubtitleUtils.updateFractionalTextSize(subtitleView, captioningManager, mPrefs);
 
             CueModifier cueModifier = playerView.cueModifier;
+            cueModifier.setSubtitleTypeface(mPrefs.subtitleTypeface, typeface);
             cueModifier.setSubtitleEdgeType(mPrefs.subtitleEdgeType);
             cueModifier.setShadowColor(edgeColor);
             final Player player = PlayerActivity.player;
@@ -2337,7 +2339,7 @@ public class PlayerActivity extends Activity {
             case Prefs.PREF_KEY_SUBTITLE_VERTICAL_POSITION:
             case Prefs.PREF_KEY_SUBTITLE_SIZE:
             case Prefs.PREF_KEY_SUBTITLE_EDGE_TYPE:
-            case Prefs.PREF_KEY_SUBTITLE_STYLE_BOLD:
+            case Prefs.PREF_KEY_SUBTITLE_TYPEFACE:
             case Prefs.PREF_KEY_SUBTITLE_STYLE_EMBEDDED:
                 updateSubtitleStyle(PlayerActivity.this);
         }
