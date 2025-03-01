@@ -78,6 +78,9 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
                 case DropShadow:
                     elements[i] = new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_edge_type_drop_shadow));
                     break;
+                case OutlineShadow:
+                    elements[i] = new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_edge_type_outline_shadow));
+                    break;
                 case Raised:
                     elements[i] = new ChoiceOsdSettingsItem.Element(context.getString(R.string.osd_subtitle_edge_type_raised));
                     break;
