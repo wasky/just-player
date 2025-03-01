@@ -327,6 +327,7 @@ class SubtitleUtils {
             case None:
                 return CaptionStyleCompat.EDGE_TYPE_NONE;
             case Outline:
+            case OutlineShadow:
                 return CaptionStyleCompat.EDGE_TYPE_OUTLINE;
             case DropShadow:
                 return CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
