@@ -62,6 +62,7 @@
     <string name="osd_subtitle_edge_type_none">Brak</string>
     <string name="osd_subtitle_edge_type_outline">Obrys</string>
     <string name="osd_subtitle_edge_type_drop_shadow">Z cieniem</string>
+    <string name="osd_subtitle_edge_type_outline_shadow">Obrys i cień</string>
     <string name="osd_subtitle_edge_type_raised">Uniesione</string>
     <string name="osd_subtitle_edge_type_depressed">Obniżone</string>
     <string name="osd_subtitle_typeface_title">Styl</string>
