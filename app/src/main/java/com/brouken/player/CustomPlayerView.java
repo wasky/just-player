@@ -13,11 +13,18 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.media3.common.C;
+import androidx.media3.common.Player;
+import androidx.media3.common.text.CueGroup;
 import androidx.media3.exoplayer.SeekParameters;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.PlayerView;
+import androidx.media3.ui.SubtitleView;
+
+import com.brouken.player.subtitle.CueModifier;
 
 import java.util.Collections;
 
@@ -68,6 +75,8 @@ public class CustomPlayerView extends PlayerView implements GestureDetector.OnGe
 
     private final TextView exoErrorMessage;
     private final View exoProgress;
+    private final ComponentListener componentListener;
+    public final CueModifier cueModifier;
 
     public CustomPlayerView(Context context) {
         this(context, null);
@@ -79,7 +88,10 @@ public class CustomPlayerView extends PlayerView implements GestureDetector.OnGe
 
     public CustomPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mDetector = new GestureDetectorCompat(context,this);
+
+        componentListener = new ComponentListener();
+        mDetector = new GestureDetectorCompat(context, this);
+        cueModifier = new CueModifier(getContext());
 
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
@@ -433,5 +445,40 @@ public class CustomPlayerView extends PlayerView implements GestureDetector.OnGe
 
     public void setBrightnessControl(BrightnessControl brightnessControl) {
         this.brightnessControl = brightnessControl;
+    }
+
+    @Override
+    public void setPlayer(@Nullable Player player) {
+        Player oldPlayer = getPlayer();
+        if (oldPlayer != null) {
+            oldPlayer.removeListener(componentListener);
+        }
+
+        super.setPlayer(player);
+
+        SubtitleView subtitleView = getSubtitleView();
+        if (subtitleView != null) {
+            subtitleView.setCues(null);
+            if (player != null) {
+                if (player.isCommandAvailable(Player.COMMAND_GET_TEXT)) {
+                    subtitleView.setCues(cueModifier.modifyCues(player.getCurrentCues().cues));
+                }
+            }
+        }
+
+        if (player != null) {
+            player.addListener(componentListener);
+        }
+    }
+
+    private final class ComponentListener implements Player.Listener {
+
+        @Override
+        public void onCues(@NonNull CueGroup cueGroup) {
+            SubtitleView subtitleView = getSubtitleView();
+            if (subtitleView != null) {
+                subtitleView.setCues(cueModifier.modifyCues(cueGroup.cues));
+            }
+        }
     }
 }
