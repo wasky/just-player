@@ -81,7 +81,8 @@ public class CueModifier {
         }
 
         boolean modified;
-        modified = modifyItalicTypeface(spannableString);
+        modified = addTextPaintModifier(spannableString);
+        modified = modifyItalicTypeface(spannableString) || modified;
         modified = addShadow(spannableString) || modified;
 
         if (modified) {
@@ -91,6 +92,11 @@ public class CueModifier {
         } else {
             return cue;
         }
+    }
+
+    private boolean addTextPaintModifier(SpannableString spannableString) {
+        spannableString.setSpan(new TextPaintModifierSpan(), 0, spannableString.length(), 0);
+        return true;
     }
 
     private boolean modifyItalicTypeface(SpannableString spannableString) {
