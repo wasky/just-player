@@ -45,7 +45,7 @@ public class OsdSettingsController {
                 prefs.subtitleVerticalPosition,
                 prefs.subtitleSize,
                 prefs.subtitleEdgeType,
-                prefs.subtitleStyleBold ? SubtitleTypeface.Bold : SubtitleTypeface.Regular,
+                prefs.subtitleTypeface,
                 prefs.subtitleStyleEmbedded
         );
 
@@ -92,7 +92,7 @@ public class OsdSettingsController {
 
             @Override
             public void onSubtitleTypefaceChange(SubtitleTypeface typeface) {
-                prefs.updateSubtitleStyleBold(typeface == SubtitleTypeface.Bold);
+                prefs.updateSubtitleTypeface(typeface);
             }
 
             @Override

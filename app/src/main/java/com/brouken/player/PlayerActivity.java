@@ -99,6 +99,7 @@ import androidx.media3.ui.TimeBar;
 import com.brouken.player.dtpv.DoubleTapPlayerView;
 import com.brouken.player.dtpv.youtube.YouTubeOverlay;
 import com.brouken.player.osd.OsdSettingsController;
+import com.brouken.player.subtitle.CueModifier;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
@@ -1952,18 +1953,28 @@ public class PlayerActivity extends Activity {
         if (subtitleView != null) {
             final CaptioningManager.CaptionStyle userStyle = captioningManager.getUserStyle();
             final CaptionStyleCompat userStyleCompat = CaptionStyleCompat.createFromCaptionStyle(userStyle);
+            final int edgeColor = userStyle.hasEdgeColor() ? userStyleCompat.edgeColor : Color.BLACK;
+            final Typeface typeface = SubtitleUtils.getSubtitleTypeface(mPrefs.subtitleTypeface, userStyleCompat);
             final CaptionStyleCompat captionStyle = new CaptionStyleCompat(
                     userStyle.hasForegroundColor() ? userStyleCompat.foregroundColor : Color.WHITE,
                     userStyle.hasBackgroundColor() ? userStyleCompat.backgroundColor : Color.TRANSPARENT,
                     userStyle.hasWindowColor() ? userStyleCompat.windowColor : Color.TRANSPARENT,
                     SubtitleUtils.getSubtitleEdgeType(mPrefs.subtitleEdgeType, userStyle),
-                    userStyle.hasEdgeColor() ? userStyleCompat.edgeColor : Color.BLACK,
-                    Typeface.create(userStyleCompat.typeface != null ? userStyleCompat.typeface : Typeface.DEFAULT,
-                            mPrefs.subtitleStyleBold ? Typeface.BOLD : Typeface.NORMAL));
+                    edgeColor,
+                    typeface);
+
             subtitleView.setStyle(captionStyle);
             subtitleView.setApplyEmbeddedStyles(mPrefs.subtitleStyleEmbedded);
             updateSubtitleBottomPaddingFraction(mPrefs.subtitleVerticalPosition);
             SubtitleUtils.updateFractionalTextSize(subtitleView, captioningManager, mPrefs);
+
+            CueModifier cueModifier = playerView.cueModifier;
+            cueModifier.setSubtitleTypeface(mPrefs.subtitleTypeface, typeface);
+            cueModifier.setSubtitleEdgeType(mPrefs.subtitleEdgeType);
+            cueModifier.setShadowColor(edgeColor);
+            if (player.isCommandAvailable(Player.COMMAND_GET_TEXT)) {
+                subtitleView.setCues(cueModifier.modifyCues(player.getCurrentCues().cues));
+            }
         }
         // setSubtitleTextSize();
     }
@@ -2327,7 +2338,7 @@ public class PlayerActivity extends Activity {
             case Prefs.PREF_KEY_SUBTITLE_VERTICAL_POSITION:
             case Prefs.PREF_KEY_SUBTITLE_SIZE:
             case Prefs.PREF_KEY_SUBTITLE_EDGE_TYPE:
-            case Prefs.PREF_KEY_SUBTITLE_STYLE_BOLD:
+            case Prefs.PREF_KEY_SUBTITLE_TYPEFACE:
             case Prefs.PREF_KEY_SUBTITLE_STYLE_EMBEDDED:
                 updateSubtitleStyle(PlayerActivity.this);
         }
