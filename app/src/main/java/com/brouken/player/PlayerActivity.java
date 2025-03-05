@@ -1972,8 +1972,11 @@ public class PlayerActivity extends Activity {
             cueModifier.setSubtitleTypeface(mPrefs.subtitleTypeface, typeface);
             cueModifier.setSubtitleEdgeType(mPrefs.subtitleEdgeType);
             cueModifier.setShadowColor(edgeColor);
-            if (player.isCommandAvailable(Player.COMMAND_GET_TEXT)) {
-                subtitleView.setCues(cueModifier.modifyCues(player.getCurrentCues().cues));
+            final Player player = PlayerActivity.player;
+            if (player != null) {
+                if (player.isCommandAvailable(Player.COMMAND_GET_TEXT)) {
+                    subtitleView.setCues(cueModifier.modifyCues(player.getCurrentCues().cues));
+                }
             }
         }
         // setSubtitleTextSize();
