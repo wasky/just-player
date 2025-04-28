@@ -1,13 +1,23 @@
 package com.brouken.player;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Typeface;
+import android.graphics.fonts.FontStyle;
 import android.net.Uri;
+import android.os.Build;
+import android.view.accessibility.CaptioningManager;
 
 import androidx.documentfile.provider.DocumentFile;
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
+import androidx.media3.ui.CaptionStyleCompat;
+import androidx.media3.ui.SubtitleView;
+
+import com.brouken.player.osd.subtitle.SubtitleEdgeType;
+import com.brouken.player.osd.subtitle.SubtitleTypeface;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -282,7 +292,7 @@ class SubtitleUtils {
         return subtitleConfigurationBuilder.build();
     }
 
-    public static float normalizeFontScale(float fontScale, boolean small) {
+    /*public static float normalizeFontScale(float fontScale, boolean small) {
         // https://bbc.github.io/subtitle-guidelines/#Presentation-font-size
         float newScale;
         // ¯\_(ツ)_/¯
@@ -306,5 +316,51 @@ class SubtitleUtils {
             newScale = (small ? 0.85f : 1.0f);
         }
         return newScale;
+    }*/
+
+    public static void updateFractionalTextSize(SubtitleView subtitleView, CaptioningManager captioningManager, Prefs prefs) {
+        float fontScale = captioningManager.getFontScale();
+        int subtitleSize = prefs.subtitleSize;
+        float fractionalTextSize = (SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * fontScale) + (subtitleSize * 0.001f);
+        subtitleView.setFractionalTextSize(fractionalTextSize);
+    }
+
+    public static @CaptionStyleCompat.EdgeType int getSubtitleEdgeType(SubtitleEdgeType subtitleEdgeType, CaptioningManager.CaptionStyle captionStyle) {
+        switch (subtitleEdgeType) {
+            case Default:
+                return captionStyle.hasEdgeType() ? captionStyle.edgeType : CaptionStyleCompat.EDGE_TYPE_OUTLINE;
+            case None:
+                return CaptionStyleCompat.EDGE_TYPE_NONE;
+            case Outline:
+            case OutlineShadow:
+                return CaptionStyleCompat.EDGE_TYPE_OUTLINE;
+            case DropShadow:
+                return CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
+            case Raised:
+                return CaptionStyleCompat.EDGE_TYPE_RAISED;
+            case Depressed:
+                return CaptionStyleCompat.EDGE_TYPE_DEPRESSED;
+            default:
+                throw new IllegalArgumentException("Unknown subtitleEdgeType: " + subtitleEdgeType);
+        }
+    }
+
+    @SuppressLint("InlinedApi")
+    public static Typeface getSubtitleTypeface(SubtitleTypeface subtitleTypeface, CaptionStyleCompat userCaptionStyle) {
+        Typeface userTypeface = userCaptionStyle.typeface != null ? userCaptionStyle.typeface : Typeface.DEFAULT;
+        switch (subtitleTypeface) {
+            case Regular:
+                return Typeface.create(userTypeface, Typeface.NORMAL);
+            case Medium:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    return Typeface.create(userTypeface, FontStyle.FONT_WEIGHT_MEDIUM, false);
+                } else {
+                    return Typeface.create(userTypeface, Typeface.NORMAL);
+                }
+            case Bold:
+                return Typeface.create(userTypeface, Typeface.BOLD);
+            default:
+                throw new IllegalArgumentException("Unknown subtitleTypeface: "+subtitleTypeface);
+        }
     }
 }
