@@ -105,12 +105,10 @@ import com.brouken.player.subtitle.CueModifier;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -354,7 +352,7 @@ public class PlayerActivity extends Activity {
         playerView.setControllerHideOnTouch(false);
         playerView.setControllerAutoShow(true);
 
-        ((DoubleTapPlayerView)playerView).setDoubleTapEnabled(false);
+        ((DoubleTapPlayerView) playerView).setDoubleTapEnabled(false);
 
         timeBar = playerView.findViewById(R.id.exo_progress);
         timeBar.addListener(new TimeBar.OnScrubListener() {
@@ -553,7 +551,7 @@ public class PlayerActivity extends Activity {
                     bottomBarPaddingBottom = windowInsets.getSystemWindowInsetBottom();
                     progressBarMarginBottom = windowInsets.getSystemWindowInsetBottom();
                 } else {
-                    view.setPadding(0, windowInsets.getSystemWindowInsetTop(),0, windowInsets.getSystemWindowInsetBottom());
+                    view.setPadding(0, windowInsets.getSystemWindowInsetTop(), 0, windowInsets.getSystemWindowInsetBottom());
                 }
 
                 Utils.setViewParams(titleView, paddingLeft + titleViewPaddingHorizontal, titleViewPaddingVertical, paddingRight + titleViewPaddingHorizontal, titleViewPaddingVertical,
@@ -1403,7 +1401,7 @@ public class PlayerActivity extends Activity {
 
             updateButtons(true);
 
-            ((DoubleTapPlayerView)playerView).setDoubleTapEnabled(true);
+            ((DoubleTapPlayerView) playerView).setDoubleTapEnabled(true);
 
             if (!apiAccess) {
                 if (nextUriThread != null) {
@@ -1766,7 +1764,7 @@ public class PlayerActivity extends Activity {
     }
 
     private TrackGroup getTrackGroupFromFormatId(int trackType, String id) {
-        if ((id == null && trackType == C.TRACK_TYPE_AUDIO ) || player == null) {
+        if ((id == null && trackType == C.TRACK_TYPE_AUDIO) || player == null) {
             return null;
         }
         for (Tracks.Group group : player.getCurrentTracks().getGroups()) {
@@ -1794,7 +1792,8 @@ public class PlayerActivity extends Activity {
 
         TrackSelectionParameters.Builder overridesBuilder = new TrackSelectionParameters.Builder(this);
         TrackSelectionOverride trackSelectionOverride = null;
-        final List<Integer> tracks = new ArrayList<>(); tracks.add(0);
+        final List<Integer> tracks = new ArrayList<>();
+        tracks.add(0);
         if (subtitleGroup != null) {
             trackSelectionOverride = new TrackSelectionOverride(subtitleGroup, tracks);
             overridesBuilder.addOverride(trackSelectionOverride);
@@ -2196,7 +2195,7 @@ public class PlayerActivity extends Activity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onUserLeaveHint() {
-        if (mPrefs!= null && mPrefs.autoPiP && player != null && player.isPlaying() && Utils.isPiPSupported(this))
+        if (mPrefs != null && mPrefs.autoPiP && player != null && player.isPlaying() && Utils.isPiPSupported(this))
             enterPiP();
         else
             super.onUserLeaveHint();
@@ -2227,23 +2226,23 @@ public class PlayerActivity extends Activity {
             // TODO: Test/disable on Android 11+
             final View videoSurfaceView = playerView.getVideoSurfaceView();
             if (videoSurfaceView instanceof SurfaceView) {
-                ((SurfaceView)videoSurfaceView).getHolder().setFixedSize(format.width, format.height);
+                ((SurfaceView) videoSurfaceView).getHolder().setFixedSize(format.width, format.height);
             }
 
             Rational rational = Utils.getRational(format);
             if (Build.VERSION.SDK_INT >= 33 &&
                     getPackageManager().hasSystemFeature(FEATURE_EXPANDED_PICTURE_IN_PICTURE) &&
                     (rational.floatValue() > rationalLimitWide.floatValue() || rational.floatValue() < rationalLimitTall.floatValue())) {
-                ((PictureInPictureParams.Builder)mPictureInPictureParamsBuilder).setExpandedAspectRatio(rational);
+                ((PictureInPictureParams.Builder) mPictureInPictureParamsBuilder).setExpandedAspectRatio(rational);
             }
             if (rational.floatValue() > rationalLimitWide.floatValue())
                 rational = rationalLimitWide;
             else if (rational.floatValue() < rationalLimitTall.floatValue())
                 rational = rationalLimitTall;
 
-            ((PictureInPictureParams.Builder)mPictureInPictureParamsBuilder).setAspectRatio(rational);
+            ((PictureInPictureParams.Builder) mPictureInPictureParamsBuilder).setAspectRatio(rational);
         }
-        enterPictureInPictureMode(((PictureInPictureParams.Builder)mPictureInPictureParamsBuilder).build());
+        enterPictureInPictureMode(((PictureInPictureParams.Builder) mPictureInPictureParamsBuilder).build());
     }
 
     void setEndControlsVisible(boolean visible) {
@@ -2267,7 +2266,8 @@ public class PlayerActivity extends Activity {
                 skipToNext();
             }
         });
-        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {});
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+        });
         final AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -2344,7 +2344,7 @@ public class PlayerActivity extends Activity {
         scaleFactor = playerView.getVideoSurfaceView().getScaleX();
         playerView.removeCallbacks(playerView.textClearRunnable);
         playerView.clearIcon();
-        playerView.setCustomErrorMessage((int)(scaleFactor * 100) + "%");
+        playerView.setCustomErrorMessage((int) (scaleFactor * 100) + "%");
         playerView.hideController();
         isScaleStarting = true;
     }
@@ -2357,7 +2357,7 @@ public class PlayerActivity extends Activity {
         }
         scaleFactor = Utils.normalizeScaleFactor(scaleFactor, playerView.getScaleFit());
         playerView.setScale(scaleFactor);
-        playerView.setCustomErrorMessage((int)(scaleFactor * 100) + "%");
+        playerView.setCustomErrorMessage((int) (scaleFactor * 100) + "%");
     }
 
     private void scaleEnd() {
