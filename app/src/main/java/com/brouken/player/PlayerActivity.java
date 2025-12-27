@@ -707,7 +707,7 @@ public class PlayerActivity extends Activity {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isTvBox) {
                     if (visibility == View.VISIBLE) {
-                        if (player != null && player.isPlaying()) {
+                        if (player != null /*&& player.isPlaying()*/) {
                             //noinspection DataFlowIssue
                             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                                     OnBackInvokedDispatcher.PRIORITY_DEFAULT,
@@ -965,7 +965,7 @@ public class PlayerActivity extends Activity {
                     return super.onKeyDown(keyCode, event);
                 } else {
                     if (isTvBox) {
-                        if (controllerVisible && player != null && player.isPlaying()) {
+                        if (controllerVisible && player != null /*&& player.isPlaying()*/) {
                             playerView.hideController();
                             return true;
                         } else {
