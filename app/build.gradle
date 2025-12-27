@@ -8,14 +8,23 @@ android {
     compileSdk = 36
     ndkVersion '29.0.14206865'
 
+    signingConfigs {
+        debug {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         def abiFilter = project.findProperty("abiFilter")
-        applicationId "com.brouken.player"
-        minSdkVersion 23
+        applicationId "pl.waskysoft.player"
+        minSdkVersion 28
         targetSdkVersion 36
-        versionCode 203
-        versionName "0.${versionCode}"
-        archivesBaseName = "Just.Player.v${versionName}"
+        versionCode 1
+        versionName "1.0"
+        archivesBaseName = "just_player_plus"
         if (abiFilter) {
             def abiCodeMap = ["x86": 1, "x86_64": 2, "armeabi-v7a": 3, "arm64-v8a": 4]
             versionCode = versionCode * 10 + abiCodeMap[abiFilter]
@@ -25,9 +34,14 @@ android {
         }
     }
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
-            minifyEnabled false
-            //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.debug
         }
     }
     flavorDimensions "targetSdk", "distribution"
@@ -35,22 +49,22 @@ android {
         latest {
             dimension "targetSdk"
         }
-        legacy {
+        /*legacy {
             dimension "targetSdk"
             versionCode = defaultConfig.versionCode + 1_000_000
             versionNameSuffix "-legacy"
             targetSdkVersion 29
-        }
+        }*/
 
         universal {
             dimension "distribution"
         }
-        amazon {
+        /*amazon {
             dimension "distribution"
         }
         accrescent {
             dimension "distribution"
-        }
+        }*/
     }
     variantFilter { variant ->
         def names = variant.flavors*.name
