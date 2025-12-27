@@ -1988,7 +1988,8 @@ public class PlayerActivity extends Activity {
     }
 
     void showSnack(final String textPrimary, final String textSecondary) {
-        snackbar = Snackbar.make(coordinatorLayout, textPrimary, Snackbar.LENGTH_LONG);
+        int duration = textSecondary != null ? 15000 : Snackbar.LENGTH_SHORT;
+        snackbar = Snackbar.make(coordinatorLayout, textPrimary, duration);
         if (textSecondary != null) {
             snackbar.setAction(R.string.error_details, v -> {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(PlayerActivity.this);
