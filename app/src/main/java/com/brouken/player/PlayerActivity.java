@@ -807,13 +807,13 @@ public class PlayerActivity extends Activity {
         releasePlayer(false);
     }
 
-    @SuppressLint("GestureBackNavigation")
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mPrefs.mSharedPreferences.unregisterOnSharedPreferenceChangeListener(preferenceListener);
     }
 
+    @SuppressLint("GestureBackNavigation")
     @Override
     public void onBackPressed() {
         restorePlayStateAllowed = false;
