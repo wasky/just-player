@@ -317,7 +317,8 @@ public class PlayerActivity extends Activity {
                         if (subsName != null && subsName.length > i) {
                             name = subsName[i];
                         }
-                        apiSubs.add(SubtitleUtils.buildSubtitle(this, sub, name, sub.equals(defaultSub)));
+                        boolean selected = sub.equals(defaultSub) || subs.size() == 1;
+                        apiSubs.add(SubtitleUtils.buildSubtitle(this, sub, name, selected));
                     }
                 }
 
