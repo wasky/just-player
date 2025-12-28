@@ -308,7 +308,7 @@ public class PlayerActivity extends Activity {
                         subUriList.add(element);
                     }
 
-                    List<Uri> subs = new SubtitleConverter().convertSubtitles(this, subUriList);
+                    List<Uri> subs = new SubtitleConverter(uri).convertSubtitles(this, subUriList);
                     String[] subsName = bundle.getStringArray(API_SUBS_NAME);
 
                     for (int i = 0; i < subs.size(); i++) {
