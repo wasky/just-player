@@ -23,7 +23,7 @@ class MicroDvdConverter(context: Context, videoUri: Uri) {
     private val frameRate: Double by lazy {
         val frameRate = Utils.getFrameRate(context, videoUri)
         if (frameRate > 0) {
-            frameRate.toDouble()
+            frameRate
         } else {
             val msg = "Couldn't read frame rate. Using default value: $DEFAULT_FRAME_RATE"
             GlobalScope.launch(Dispatchers.Main) {

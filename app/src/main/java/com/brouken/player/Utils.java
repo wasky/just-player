@@ -791,10 +791,10 @@ class Utils {
         MediaScannerConnection.scanFile(context, storagePaths.toArray(new String[0]), new String[]{"*/*"}, null);
     }
 
-    public static float getFrameRate(Context context, Uri videoUri) {
+    public static double getFrameRate(Context context, Uri videoUri) {
         MediaExtractor mediaExtractor = new MediaExtractor();
         ArrayList<Long> timestamps = new ArrayList<>();
-        float frameRate = Format.NO_VALUE;
+        double frameRate = Format.NO_VALUE;
         int ignoreSamples = 30;
         try {
             mediaExtractor.setDataSource(context, videoUri, null);
@@ -820,26 +820,26 @@ class Utils {
                 totalFrameDuration += (timestamps.get(i) - timestamps.get(i - 1));
             }
             if (timestamps.size() > 1) {
-                float averageFrameDuration = (float) totalFrameDuration / (timestamps.size() - ignoreSamples - 1);
-                frameRate = 1_000_000f / averageFrameDuration;
-                if (frameRate > 23.95f && frameRate < 23.988f) {
-                    frameRate = 24000f / 1001f;
+                double averageFrameDuration = (double) totalFrameDuration / (timestamps.size() - ignoreSamples - 1);
+                frameRate = 1_000_000.0 / averageFrameDuration;
+                if (frameRate > 23.95 && frameRate < 23.988) {
+                    frameRate = 24000.0 / 1001.0;
                 } else if (frameRate > 23.988 && frameRate < 24.1) {
-                    frameRate = 24f;
+                    frameRate = 24.0;
                 } else if (frameRate > 24.9 && frameRate < 25.1) {
-                    frameRate = 25f;
-                } else if (frameRate > 29.95f && frameRate < 29.985) {
-                    frameRate = 30000f / 1001f;
+                    frameRate = 25.0;
+                } else if (frameRate > 29.95 && frameRate < 29.985) {
+                    frameRate = 30000.0 / 1001.0;
                 } else if (frameRate > 29.985 && frameRate < 30.1) {
-                    frameRate = 30f;
+                    frameRate = 30.0;
                 } else if (frameRate > 49.9f && frameRate < 50.1) {
-                    frameRate = 50f;
+                    frameRate = 50.0;
                 } else if (frameRate > 59.9f && frameRate < 59.97) {
-                    frameRate = 60000f / 1001f;
+                    frameRate = 60000.0 / 1001.0;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         } finally {
             mediaExtractor.release();
         }
@@ -854,7 +854,7 @@ class Utils {
                 activity.frameRateSwitchThread.interrupt();
             }
             activity.frameRateSwitchThread = new Thread(() -> {
-                float frameRate = getFrameRate(activity, uri);
+                float frameRate = (float) getFrameRate(activity, uri);
                 Utils.handleFrameRate(activity, frameRate, play);
             });
             activity.frameRateSwitchThread.start();
