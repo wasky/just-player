@@ -16,6 +16,7 @@ import com.brouken.player.osd.item.ChoiceOsdSettingsItem;
 import com.brouken.player.osd.item.IntegerOsdSettingsItem;
 import com.brouken.player.osd.item.OsdSettingsItem;
 import com.brouken.player.osd.item.SimpleOsdSettingsItem;
+import com.brouken.player.osd.item.SubtitleDelayOsdSettingsItem;
 
 import java.util.ArrayList;
 
@@ -28,13 +29,14 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
         this.listener = listener;
     }
 
-    public void setInitialValues(int subtitlePosition, int size, SubtitleEdgeType edgeType, SubtitleTypeface typeface, boolean embeddedStyles) {
-        this.items = createSubtitleSettingsArray(subtitlePosition, size, edgeType, typeface, embeddedStyles);
+    public void setInitialValues(int subtitlePosition, int subtitleDelay, int size, SubtitleEdgeType edgeType, SubtitleTypeface typeface, boolean embeddedStyles) {
+        this.items = createSubtitleSettingsArray(subtitlePosition, subtitleDelay, size, edgeType, typeface, embeddedStyles);
     }
 
-    private OsdSettingsItem[] createSubtitleSettingsArray(int subtitlePosition, int size, SubtitleEdgeType edgeType, SubtitleTypeface typeface, boolean embeddedStyles) {
+    private OsdSettingsItem[] createSubtitleSettingsArray(int subtitlePosition, int subtitleDelay, int size, SubtitleEdgeType edgeType, SubtitleTypeface typeface, boolean embeddedStyles) {
         return new OsdSettingsItem[]{
                 createPositionItem(subtitlePosition),
+                createDelayItem(subtitleDelay),
                 createSizeItem(size),
                 createEdgeTypeItem(edgeType),
                 createTypefaceItem(typeface),
@@ -53,6 +55,11 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
 
         IntegerOsdSettingsItem.Listener itemListener = (position, newValue) -> listener.onSubtitlePositionChange(newValue);
         return new IntegerOsdSettingsItem(title, labelDefault, true, subtitlePosition, itemListener, this);
+    }
+
+    private OsdSettingsItem createDelayItem(int subtitleDelay) {
+        IntegerOsdSettingsItem.Listener itemListener = (position, newValue) -> listener.onSubtitleDelayChange(newValue);
+        return new SubtitleDelayOsdSettingsItem(context, subtitleDelay, itemListener, this);
     }
 
     private OsdSettingsItem createSizeItem(int size) {
@@ -147,6 +154,8 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
     public interface Listener {
 
         void onSubtitlePositionChange(int position);
+
+        void onSubtitleDelayChange(int delay);
 
         void onSubtitleSizeChange(int size);
 

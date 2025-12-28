@@ -87,6 +87,7 @@ import androidx.media3.exoplayer.SeekParameters;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.extractor.DefaultExtractorsFactory;
+import androidx.media3.extractor.text.SubtitleParser;
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory;
 import androidx.media3.extractor.ts.TsExtractor;
 import androidx.media3.session.MediaSession;
@@ -102,6 +103,8 @@ import com.brouken.player.dtpv.DoubleTapPlayerView;
 import com.brouken.player.dtpv.youtube.YouTubeOverlay;
 import com.brouken.player.osd.OsdSettingsController;
 import com.brouken.player.subtitle.CueModifier;
+import com.brouken.player.subtitle.parser.EnhancedSubtitleParserFactory;
+import com.brouken.player.subtitle.parser.OffsetSubtitleParserFactory;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
@@ -182,6 +185,7 @@ public class PlayerActivity extends Activity {
     private long scrubbingStart;
     public boolean frameRendered;
     private boolean alive;
+    private final Runnable subtitleDelayApplyRunnable = this::applySubtitleDelay;
     public static boolean focusPlay = false;
     private Uri nextUri;
     private static boolean isTvBox;
@@ -1277,17 +1281,26 @@ public class PlayerActivity extends Activity {
                     .setPreferredTextLanguage(locale.getISO3Language())
             );
         }
+        SubtitleParser.Factory subtitleParserFactory =
+                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(), mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri));
+
         // https://github.com/google/ExoPlayer/issues/8571
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory()
                 .setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ENABLE_HDMV_DTS_AUDIO_STREAMS)
-                .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE);
+                .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE)
+                .setSubtitleParserFactory(subtitleParserFactory);
+
         @SuppressLint("WrongConstant") RenderersFactory renderersFactory = new DefaultRenderersFactory(this)
                 .setExtensionRendererMode(mPrefs.decoderPriority)
                 .setMapDV7ToHevc(mPrefs.mapDV7ToHevc);
 
+        DefaultMediaSourceFactory mediaSourceFactory =
+                new DefaultMediaSourceFactory(this, extractorsFactory)
+                        .setSubtitleParserFactory(subtitleParserFactory);
+
         ExoPlayer.Builder playerBuilder = new ExoPlayer.Builder(this, renderersFactory)
                 .setTrackSelector(trackSelector)
-                .setMediaSourceFactory(new DefaultMediaSourceFactory(this, extractorsFactory));
+                .setMediaSourceFactory(mediaSourceFactory);
 
         if (haveMedia && isNetworkUri) {
             if (mPrefs.mediaUri.getScheme().toLowerCase().startsWith("http")) {
@@ -1297,7 +1310,10 @@ public class PlayerActivity extends Activity {
                     headers.put("Authorization", "Basic " + Base64.encodeToString(userInfo.getBytes(), Base64.NO_WRAP));
                     DefaultHttpDataSource.Factory defaultHttpDataSourceFactory = new DefaultHttpDataSource.Factory();
                     defaultHttpDataSourceFactory.setDefaultRequestProperties(headers);
-                    playerBuilder.setMediaSourceFactory(new DefaultMediaSourceFactory(defaultHttpDataSourceFactory, extractorsFactory));
+                    DefaultMediaSourceFactory networkMediaSourceFactory =
+                            new DefaultMediaSourceFactory(defaultHttpDataSourceFactory, extractorsFactory)
+                                    .setSubtitleParserFactory(subtitleParserFactory);
+                    playerBuilder.setMediaSourceFactory(networkMediaSourceFactory);
                 }
             }
         }
@@ -2059,6 +2075,19 @@ public class PlayerActivity extends Activity {
     private void updateSubtitleBottomPaddingFraction(int subtitleVerticalPosition) {
         float bottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION + (subtitleVerticalPosition * 0.01f);
         playerView.getSubtitleView().setBottomPaddingFraction(bottomPaddingFraction);
+    }
+
+    public void updateSubtitleDelay(int delayMs) {
+        mPrefs.updateSubtitleDelay(delayMs);
+        playerView.removeCallbacks(subtitleDelayApplyRunnable);
+        playerView.postDelayed(subtitleDelayApplyRunnable, 500);
+    }
+
+    private void applySubtitleDelay() {
+        boolean shouldRestorePlayState = restorePlayState || (player != null && player.getPlayWhenReady());
+        savePlayer();
+        restorePlayState = shouldRestorePlayState;
+        initializePlayer();
     }
 
     void searchSubtitles() {

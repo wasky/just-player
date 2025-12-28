@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +20,12 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Prefs {
     // Previously used
@@ -55,6 +61,9 @@ public class Prefs {
     static final String PREF_KEY_SUBTITLE_VERTICAL_POSITION = "subtitleVerticalPosition";
     static final String PREF_KEY_SUBTITLE_SIZE = "subtitleSize";
     static final String PREF_KEY_SUBTITLE_EDGE_TYPE = "subtitleEdgeType";
+    private static final String PREF_KEY_SUBTITLE_DELAY_MAP = "subtitleDelayMap";
+
+    private static final int MAX_SUBTITLE_DELAY_ENTRIES = 25;
 
     public static final String TRACK_DEFAULT = "default";
     public static final String TRACK_DEVICE = "device";
@@ -94,6 +103,7 @@ public class Prefs {
     public SubtitleTypeface subtitleTypeface = SubtitleTypeface.Regular;
 
     private LinkedHashMap positions;
+    private final LinkedHashMap<String, Integer> subtitleDelayMap = new LinkedHashMap<>();
 
     public boolean persistentMode = true;
     public long nonPersitentPosition = -1L;
@@ -136,6 +146,7 @@ public class Prefs {
         askScope = mSharedPreferences.getBoolean(PREF_KEY_ASK_SCOPE, askScope);
         speed = mSharedPreferences.getFloat(PREF_KEY_SPEED, speed);
         loadUserPreferences();
+        loadSubtitleDelays();
     }
 
     public void loadUserPreferences() {
@@ -344,6 +355,116 @@ public class Prefs {
         final SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putInt(PREF_KEY_SUBTITLE_SIZE, subtitleSize);
         sharedPreferencesEditor.apply();
+    }
+
+    public void updateSubtitleDelay(final int subtitleDelayMs) {
+        if (mediaUri != null) {
+            updateSubtitleDelayForUri(mediaUri, subtitleDelayMs);
+        }
+    }
+
+    public int getSubtitleDelayForUri(@Nullable Uri uri) {
+        String key = getSubtitleDelayKeyFromUri(uri);
+        if (key == null) {
+            return 0;
+        }
+        Integer delay = subtitleDelayMap.get(key);
+        return delay != null ? delay : 0;
+    }
+
+    private void updateSubtitleDelayForUri(@NonNull Uri uri, int delayMs) {
+        String key = getSubtitleDelayKeyFromUri(uri);
+        if (key == null) {
+            return;
+        }
+        subtitleDelayMap.remove(key);
+        subtitleDelayMap.put(key, delayMs);
+        while (subtitleDelayMap.size() > MAX_SUBTITLE_DELAY_ENTRIES) {
+            String oldestKey = subtitleDelayMap.keySet().iterator().next();
+            subtitleDelayMap.remove(oldestKey);
+        }
+        saveSubtitleDelays();
+    }
+
+    private void loadSubtitleDelays() {
+        subtitleDelayMap.clear();
+        String raw = mSharedPreferences.getString(PREF_KEY_SUBTITLE_DELAY_MAP, null);
+        if (raw == null || raw.isEmpty()) {
+            return;
+        }
+        try {
+            JSONArray array = new JSONArray(raw);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject entry = array.optJSONObject(i);
+                if (entry == null) {
+                    continue;
+                }
+                String storedKey = entry.optString("name", null);
+                if (storedKey == null || storedKey.isEmpty()) {
+                    storedKey = entry.optString("uri", null);
+                }
+                String key = normalizeSubtitleDelayKey(storedKey);
+                if (key == null || key.isEmpty()) {
+                    continue;
+                }
+                int delayMs = entry.optInt("delay", 0);
+                subtitleDelayMap.remove(key);
+                subtitleDelayMap.put(key, delayMs);
+                if (subtitleDelayMap.size() >= MAX_SUBTITLE_DELAY_ENTRIES) {
+                    break;
+                }
+            }
+        } catch (JSONException e) {
+            Log.w(Utils.TAG, e);
+        }
+    }
+
+    private void saveSubtitleDelays() {
+        JSONArray array = new JSONArray();
+        try {
+            for (Map.Entry<String, Integer> entry : subtitleDelayMap.entrySet()) {
+                JSONObject object = new JSONObject();
+                object.put("name", entry.getKey());
+                object.put("delay", entry.getValue());
+                array.put(object);
+            }
+        } catch (JSONException e) {
+            Log.w(Utils.TAG, e);
+            return;
+        }
+        final SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
+        sharedPreferencesEditor.putString(PREF_KEY_SUBTITLE_DELAY_MAP, array.toString());
+        sharedPreferencesEditor.apply();
+    }
+
+    @Nullable
+    private String getSubtitleDelayKeyFromUri(@Nullable Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+        String fileName = Utils.getFileName(mContext, uri, true);
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
+        }
+        return fileName;
+    }
+
+    @Nullable
+    private String normalizeSubtitleDelayKey(@Nullable String rawKey) {
+        if (rawKey == null || rawKey.isEmpty()) return null;
+
+        boolean looksLikeUri = rawKey.contains("://")
+                || rawKey.startsWith("file:")
+                || rawKey.startsWith("content:");
+
+        if (looksLikeUri) {
+            String normalized = getSubtitleDelayKeyFromUri(Uri.parse(rawKey));
+            if (normalized != null) {
+                return normalized;
+            }
+        }
+
+        return rawKey;
     }
 
     public void updateSubtitleEdgeType(final SubtitleEdgeType subtitleEdgeType) {

@@ -43,6 +43,7 @@ public class OsdSettingsController {
 
         subtitleAdapter.setInitialValues(
                 prefs.subtitleVerticalPosition,
+                prefs.getSubtitleDelayForUri(prefs.mediaUri),
                 prefs.subtitleSize,
                 prefs.subtitleEdgeType,
                 prefs.subtitleTypeface,
@@ -78,6 +79,11 @@ public class OsdSettingsController {
             @Override
             public void onSubtitlePositionChange(int position) {
                 prefs.updateSubtitleVerticalPosition(position);
+            }
+
+            @Override
+            public void onSubtitleDelayChange(int delay) {
+                playerActivity.updateSubtitleDelay(delay);
             }
 
             @Override

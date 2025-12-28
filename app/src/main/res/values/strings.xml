@@ -58,6 +58,7 @@
     <string name="osd_item_boolean_false">Off</string>
     <string name="osd_subtitle_title">@string/pref_subtitle_header</string>
     <string name="osd_subtitle_position_title">Position</string>
+    <string name="osd_subtitle_delay_title">Delay</string>
     <string name="osd_subtitle_size_title">Size</string>
     <string name="osd_subtitle_edge_type_title">Edge type</string>
     <string name="osd_subtitle_edge_type_default">@string/pref_language_track_default</string>
