@@ -19,8 +19,9 @@ class MicroDvdConverter(context: Context, videoUri: Uri) {
     private val frameRateRegex = Regex("\\d+(\\.\\d+)?")
 
     private var cueIndex = 1
+    private var headerFrameRate: Double? = null
 
-    private val frameRate: Double by lazy {
+    private val fallbackFrameRate: Double by lazy {
         val frameRate = Utils.getFrameRate(context, videoUri)
         if (frameRate > 0) {
             frameRate
@@ -46,6 +47,7 @@ class MicroDvdConverter(context: Context, videoUri: Uri) {
         val rawText = match.groupValues[3]
 
         if (isFrameRateHeader(startFrame, endFrame, rawText)) {
+            applyFrameRateHeader(rawText)
             return ""
         }
 
@@ -74,7 +76,7 @@ class MicroDvdConverter(context: Context, videoUri: Uri) {
 
     private fun formatTime(frame: Long): String {
         val safeFrame = frame.coerceAtLeast(0)
-        val totalMillis = ((safeFrame.toDouble() / frameRate) * 1000.0).roundToLong()
+        val totalMillis = ((safeFrame.toDouble() / resolvedFrameRate()) * 1000.0).roundToLong()
 
         val hours = totalMillis / 3_600_000
         val minutes = (totalMillis % 3_600_000) / 60_000
@@ -97,6 +99,22 @@ class MicroDvdConverter(context: Context, videoUri: Uri) {
             if (millis < 100) append('0')
             if (millis < 10) append('0')
             append(millis)
+        }
+    }
+
+    private fun resolvedFrameRate(): Double {
+        return headerFrameRate ?: fallbackFrameRate
+    }
+
+    private fun applyFrameRateHeader(text: String) {
+        val trimmedText = text.trim()
+        if (trimmedText.startsWith("23.97")) {
+            headerFrameRate = DEFAULT_FRAME_RATE
+        } else {
+            val parsed = trimmedText.toDoubleOrNull() ?: 0.0
+            if (parsed > 0) {
+                headerFrameRate = parsed
+            }
         }
     }
 
