@@ -49,17 +49,11 @@ public class SubtitleConverter {
 
     private void convertSubtitle(Context context, CountDownLatch countDownLatch, Uri[] results, int positionOnResults, Uri sourceUri) {
         String scheme = sourceUri.getScheme();
-
-        if (scheme == null) {
-            results[positionOnResults] = sourceUri;
-            countDownLatch.countDown();
-            return;
-        }
-
-        if (scheme.equals("http") || scheme.equals("https")) {
+        if (scheme != null && (scheme.equals("http") || scheme.equals("https"))) {
             convertSubtitleFromHttp(context, countDownLatch, results, positionOnResults, sourceUri);
         } else {
             results[positionOnResults] = sourceUri;
+            countDownLatch.countDown();
         }
     }
 
