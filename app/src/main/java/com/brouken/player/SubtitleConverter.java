@@ -5,8 +5,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.sigpwned.chardet4j.Chardet;
-import com.sigpwned.chardet4j.io.DecodedInputStreamReader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -71,20 +71,22 @@ public class SubtitleConverter {
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful()) {
                     ResponseBody responseBody = response.body();
-                    //noinspection DataFlowIssue
-                    try (DecodedInputStreamReader reader = Chardet.decode(responseBody.byteStream(), StandardCharsets.UTF_8)) {
+                    try (BufferedReader reader = new BufferedReader(Chardet.decode(responseBody.byteStream(), StandardCharsets.UTF_8))) {
                         File subtitleCacheDir = getSubtitleCacheDir(context);
                         String fileName = Utils.getFileName(context, sourceUri, true);
                         File subtitleFile = new File(subtitleCacheDir, fileName);
                         try (Writer writer = new FileWriter(subtitleFile)) {
-                            char[] buffer = new char[4096];
-                            int read;
-                            while ((read = reader.read(buffer)) != -1) {
-                                writer.write(buffer, 0, read);
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                if (!line.isEmpty() && line.charAt(0) == '/') {
+                                    line = "<i>" + line.substring(1) + "</i>";
+                                }
+                                writer.write(line);
+                                writer.write('\n');
                             }
                             writer.flush();
-                            convertedUri = Uri.fromFile(subtitleFile);
                         }
+                        convertedUri = Uri.fromFile(subtitleFile);
                     }
                 }
             } catch (IOException e) {
