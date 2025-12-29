@@ -87,10 +87,6 @@ public class SubtitleConverter {
                                 if (isMicroDvd) {
                                     if (line.isEmpty()) continue;
                                     line = microDvdConverter.convertMicroDvdLineToSrt(line);
-                                } else {
-                                    if (!line.isEmpty() && line.charAt(0) == '/') {
-                                        line = "<i>" + line.substring(1) + "</i>";
-                                    }
                                 }
                                 writer.write(line);
                                 writer.write('\n');
