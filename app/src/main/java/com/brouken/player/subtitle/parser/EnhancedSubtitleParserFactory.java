@@ -9,6 +9,11 @@ import androidx.media3.extractor.text.SubtitleParser;
 public final class EnhancedSubtitleParserFactory implements SubtitleParser.Factory {
 
     private final DefaultSubtitleParserFactory defaultFactory = new DefaultSubtitleParserFactory();
+    private final double fallbackFrameRate;
+
+    public EnhancedSubtitleParserFactory(double fallbackFrameRate) {
+        this.fallbackFrameRate = fallbackFrameRate;
+    }
 
     @Override
     public boolean supportsFormat(@NonNull Format format) {
@@ -24,16 +29,17 @@ public final class EnhancedSubtitleParserFactory implements SubtitleParser.Facto
     @NonNull
     @Override
     public SubtitleParser create(@NonNull Format format) {
-        String mimeType = format.sampleMimeType;
-        if (mimeType != null) {
-            switch (mimeType) {
-                case MimeTypes.APPLICATION_SUBRIP:
-                    return new EnhancedSubripParser();
-                default:
-                    break;
-            }
+        SubtitleParser fallbackParser;
+        String mimeType = format.sampleMimeType != null ? format.sampleMimeType : "";
+        switch (mimeType) {
+            case MimeTypes.APPLICATION_SUBRIP:
+                fallbackParser = new EnhancedSubripParser();
+                break;
+            default:
+                fallbackParser = defaultFactory.create(format);
+                break;
         }
-        return defaultFactory.create(format);
+        return new MicroDvdParser(format, fallbackParser, fallbackFrameRate);
     }
 
 }

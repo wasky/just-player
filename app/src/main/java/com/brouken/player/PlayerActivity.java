@@ -312,7 +312,7 @@ public class PlayerActivity extends Activity {
                         subUriList.add(element);
                     }
 
-                    List<Uri> subs = new SubtitleConverter(uri).convertSubtitles(this, subUriList);
+                    List<Uri> subs = new SubtitleConverter().convertSubtitles(this, subUriList);
                     String[] subsName = bundle.getStringArray(API_SUBS_NAME);
 
                     for (int i = 0; i < subs.size(); i++) {
@@ -1281,8 +1281,12 @@ public class PlayerActivity extends Activity {
                     .setPreferredTextLanguage(locale.getISO3Language())
             );
         }
+
+        double videoFrameRate = Utils.getFrameRate(this, mPrefs.mediaUri);
+        int subtitleDelay = mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri);
+
         SubtitleParser.Factory subtitleParserFactory =
-                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(), mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri));
+                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(videoFrameRate), subtitleDelay);
 
         // https://github.com/google/ExoPlayer/issues/8571
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory()
