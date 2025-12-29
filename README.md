@@ -6,16 +6,18 @@ This is a modified version of [Just Player](https://github.com/moneytoo/Player) 
 
 ### Additional subtitle settings on the playback screen
 
+* Experimental: Subtitle delay/advance
+* Experimental: Support for MicroDVD and MPL2 subtitles
 * Subtitle settings (size, style, position) can be configured by long-pressing the subtitle icon on the playback screen
-* New **Outline & shadow** subtitle edge style
-* New **Medium** font style in addition to **Regular** and **Bold**
+* New `Outline & shadow` subtitle edge style
+* New `Medium` font style in addition to Regular and Bold
 * On Android TV, you can achieve a Netflix / Nova Player–like subtitle style by setting:
-  * Position: **+3**
-  * Size: **-8**
-  * Edge type: **Outline & shadow**
-  * Typeface: **Medium**
+  * Position: `+3`
+  * Size: `-8`
+  * Edge type: `Outline & shadow`
+  * Typeface: `Medium`
 
-<img src="https://github.com/user-attachments/assets/6bf640cb-b1b7-4d28-8f65-48691ca1d4f3" width="800">
+<img src="https://github.com/user-attachments/assets/b98be7fa-f38c-4ab5-aea0-d580b69f40e1" width="800">
 
 ### Other changes
 
