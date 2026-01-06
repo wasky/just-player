@@ -33,6 +33,11 @@ public class SubtitleOsdSettingsAdapter extends OsdSettingsAdapter {
         this.items = createSubtitleSettingsArray(subtitlePosition, subtitleDelay, size, edgeType, typeface, embeddedStyles);
     }
 
+    public void setSubtitlePosition(int subtitlePosition) {
+        this.items[0] = createPositionItem(subtitlePosition);
+        notifyItemChanged(0);
+    }
+
     private OsdSettingsItem[] createSubtitleSettingsArray(int subtitlePosition, int subtitleDelay, int size, SubtitleEdgeType edgeType, SubtitleTypeface typeface, boolean embeddedStyles) {
         return new OsdSettingsItem[]{
                 createPositionItem(subtitlePosition),

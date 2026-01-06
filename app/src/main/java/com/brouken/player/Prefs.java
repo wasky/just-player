@@ -15,6 +15,10 @@ import androidx.media3.ui.AspectRatioFrameLayout;
 import com.brouken.player.osd.subtitle.SubtitleEdgeType;
 import com.brouken.player.osd.subtitle.SubtitleTypeface;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -22,10 +26,6 @@ import java.io.ObjectOutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Prefs {
     // Previously used
@@ -75,6 +75,7 @@ public class Prefs {
     public Uri subtitleUri;
     public Uri scopeUri;
     public String mediaType;
+    private int currentVideoHeight = 0;
     public int resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT;
     public Utils.Orientation orientation = Utils.Orientation.UNSPECIFIED;
     public float scale = 1.f;
@@ -160,7 +161,7 @@ public class Prefs {
         mapDV7ToHevc = mSharedPreferences.getBoolean(PREF_KEY_MAP_DV7, mapDV7ToHevc);
         languageAudio = mSharedPreferences.getString(PREF_KEY_LANGUAGE_AUDIO, languageAudio);
         subtitleStyleEmbedded = mSharedPreferences.getBoolean(PREF_KEY_SUBTITLE_STYLE_EMBEDDED, subtitleStyleEmbedded);
-        subtitleVerticalPosition = mSharedPreferences.getInt(PREF_KEY_SUBTITLE_VERTICAL_POSITION, subtitleVerticalPosition);
+        subtitleVerticalPosition = getSubtitleVerticalPositionForVideoHeight(currentVideoHeight);
         subtitleSize = mSharedPreferences.getInt(PREF_KEY_SUBTITLE_SIZE, subtitleSize);
         subtitleEdgeType = valueOfEnum(SubtitleEdgeType.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_EDGE_TYPE, null), subtitleEdgeType);
         subtitleTypeface = valueOfEnum(SubtitleTypeface.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_TYPEFACE, null), subtitleTypeface);
@@ -171,6 +172,8 @@ public class Prefs {
         mediaType = type;
         updateSubtitle(null);
         updateMeta(null, null, AspectRatioFrameLayout.RESIZE_MODE_FIT, 1.f, 1.f);
+        currentVideoHeight = 0;
+        subtitleVerticalPosition = getSubtitleVerticalPositionForVideoHeight(currentVideoHeight);
 
         if (mediaType != null && mediaType.endsWith("/*")) {
             mediaType = null;
@@ -346,8 +349,32 @@ public class Prefs {
     public void updateSubtitleVerticalPosition(final int subtitleVerticalPosition) {
         this.subtitleVerticalPosition = subtitleVerticalPosition;
         final SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putInt(PREF_KEY_SUBTITLE_VERTICAL_POSITION, subtitleVerticalPosition);
+        sharedPreferencesEditor.putInt(getSubtitleVerticalPositionKey(currentVideoHeight), subtitleVerticalPosition);
         sharedPreferencesEditor.apply();
+    }
+
+    public boolean refreshSubtitleVerticalPositionForVideoHeight(int videoHeight) {
+        this.currentVideoHeight = videoHeight;
+        int position = getSubtitleVerticalPositionForVideoHeight(videoHeight);
+        if (subtitleVerticalPosition != position) {
+            subtitleVerticalPosition = position;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int getSubtitleVerticalPositionForVideoHeight(int videoHeight) {
+        String key = getSubtitleVerticalPositionKey(videoHeight);
+        return mSharedPreferences.getInt(key, 0);
+    }
+
+    private String getSubtitleVerticalPositionKey(int videoHeight) {
+        if (videoHeight > 0) {
+            return PREF_KEY_SUBTITLE_VERTICAL_POSITION + "_" + videoHeight;
+        } else {
+            return PREF_KEY_SUBTITLE_VERTICAL_POSITION;
+        }
     }
 
     public void updateSubtitleSize(final int subtitleSize) {

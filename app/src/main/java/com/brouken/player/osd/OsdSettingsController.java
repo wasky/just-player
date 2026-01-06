@@ -29,6 +29,7 @@ public class OsdSettingsController {
     private final PlayerActivity playerActivity;
     private final Prefs prefs;
 
+    private final SubtitleOsdSettingsAdapter subtitleAdapter;
     private final PopupWindow osdSettingsWindow;
 
     @SuppressLint("InflateParams")
@@ -38,8 +39,7 @@ public class OsdSettingsController {
 
         Context context = playerActivity.playerView.getContext();
 
-        SubtitleOsdSettingsAdapter subtitleAdapter =
-                new SubtitleOsdSettingsAdapter(context, createSubtitleSettingsListener());
+        subtitleAdapter = new SubtitleOsdSettingsAdapter(context, createSubtitleSettingsListener());
 
         subtitleAdapter.setInitialValues(
                 prefs.subtitleVerticalPosition,
@@ -72,6 +72,10 @@ public class OsdSettingsController {
         // Without delaying hide, controller's UI reappears when
         // using physical button on a remote to open settings
         playerActivity.playerView.postDelayed(playerActivity.playerView::hideController, 100);
+    }
+
+    public void updateSubtitlePosition() {
+        subtitleAdapter.setSubtitlePosition(prefs.subtitleVerticalPosition);
     }
 
     private SubtitleOsdSettingsAdapter.Listener createSubtitleSettingsListener() {

@@ -1585,6 +1585,11 @@ public class PlayerActivity extends Activity {
                         }
 
                         updateSubtitleViewMargin(format);
+
+                        if (mPrefs.refreshSubtitleVerticalPositionForVideoHeight(format.height)) {
+                            updateSubtitleStyle(PlayerActivity.this);
+                            osdSettingsController.updateSubtitlePosition();
+                        }
                     }
 
                     if (duration != C.TIME_UNSET && duration > TimeUnit.MINUTES.toMillis(20)) {
@@ -2453,13 +2458,19 @@ public class PlayerActivity extends Activity {
     }
 
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceListener = (sharedPreferences, key) -> {
+        if (key == null) return;
         switch (key) {
-            case Prefs.PREF_KEY_SUBTITLE_VERTICAL_POSITION:
             case Prefs.PREF_KEY_SUBTITLE_SIZE:
             case Prefs.PREF_KEY_SUBTITLE_EDGE_TYPE:
             case Prefs.PREF_KEY_SUBTITLE_TYPEFACE:
             case Prefs.PREF_KEY_SUBTITLE_STYLE_EMBEDDED:
                 updateSubtitleStyle(PlayerActivity.this);
+                break;
+            default:
+                if (key.startsWith(Prefs.PREF_KEY_SUBTITLE_VERTICAL_POSITION)) {
+                    updateSubtitleStyle(PlayerActivity.this);
+                    break;
+                }
         }
     };
 }
