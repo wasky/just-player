@@ -20,7 +20,7 @@ android {
     defaultConfig {
         def abiFilter = project.findProperty("abiFilter")
         applicationId "pl.waskysoft.player"
-        minSdkVersion 28
+        minSdkVersion 25
         targetSdkVersion 36
         versionCode 1
         versionName "2.0"
