@@ -74,7 +74,9 @@ public class CueModifier {
     // TODO(Wasky) Create documentation for this method
     private Cue modifyCue(Cue cue) {
         SpannableString spannableString;
-        if (cue.text instanceof SpannableString) {
+        if (cue.text == null) {
+            return cue;
+        } else if (cue.text instanceof SpannableString) {
             spannableString = (SpannableString) cue.text;
         } else {
             spannableString = SpannableString.valueOf(cue.text);
