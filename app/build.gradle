@@ -23,7 +23,7 @@ android {
         minSdkVersion 25
         targetSdkVersion 36
         versionCode 1
-        versionName "2.0"
+        versionName "3.0"
         archivesBaseName = "just_player_plus"
         if (abiFilter) {
             def abiCodeMap = ["x86": 1, "x86_64": 2, "armeabi-v7a": 3, "arm64-v8a": 4]
