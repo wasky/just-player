@@ -52,6 +52,17 @@
             app:selectable="false"
             app:summary="@string/pref_subtitle_message" />
 
+        <SwitchPreferenceCompat
+            app:key="subtitleCustomFontEnabled"
+            app:defaultValue="false"
+            app:title="@string/pref_custom_subtitle_font" />
+
+        <Preference
+            app:key="subtitleCustomFontChoose"
+            app:enabled="false"
+            app:summary="@string/pref_custom_subtitle_font_not_set"
+            app:title="@string/pref_choose_custom_font" />
+
         <Preference
             app:title="@string/pref_captioning_preferences">
             <intent android:action="android.settings.CAPTIONING_SETTINGS" />

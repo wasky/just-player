@@ -2,11 +2,16 @@ package com.brouken.player;
 
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -14,8 +19,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreferenceCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +81,7 @@ public class SettingsActivity extends AppCompatActivity {
                         windowInsets.getSystemWindowInsetRight(),
                         0);
                 if (recyclerView != null) {
-                    recyclerView.setPadding(0,0,0, windowInsets.getSystemWindowInsetBottom());
+                    recyclerView.setPadding(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
                 }
                 windowInsets.consumeSystemWindowInsets();
                 return windowInsets;
@@ -79,6 +90,30 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+
+        private static final String PREF_KEY_CUSTOM_SUBTITLE_FONT_CHOOSE = "subtitleCustomFontChoose";
+        private static final String[] CUSTOM_FONT_MIME_TYPES = new String[]{
+                "font/*",
+                "application/x-font-ttf",
+                "application/x-font-otf",
+                "application/x-font-ttc",
+                "application/vnd.ms-opentype",
+                "application/octet-stream"
+        };
+
+        private SwitchPreferenceCompat customSubtitleFontSwitch;
+        private Preference customSubtitleFontChoose;
+        private ActivityResultLauncher<String[]> customSubtitleFontPicker;
+
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            customSubtitleFontPicker = registerForActivityResult(
+                    new ActivityResultContracts.OpenDocument(),
+                    this::handleCustomSubtitleFontPick
+            );
+        }
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
@@ -118,6 +153,27 @@ public class SettingsActivity extends AppCompatActivity {
                 listPreferenceLanguageAudio.setEntries(entries.values().toArray(new String[0]));
                 listPreferenceLanguageAudio.setEntryValues(entries.keySet().toArray(new String[0]));
             }
+
+            customSubtitleFontSwitch = findPreference(Prefs.PREF_KEY_SUBTITLE_CUSTOM_FONT_ENABLED);
+            customSubtitleFontChoose = findPreference(PREF_KEY_CUSTOM_SUBTITLE_FONT_CHOOSE);
+
+            if (customSubtitleFontSwitch != null && customSubtitleFontChoose != null) {
+                customSubtitleFontChoose.setEnabled(customSubtitleFontSwitch.isChecked());
+                updateCustomSubtitleFontSummary();
+
+                customSubtitleFontSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean enabled = (Boolean) newValue;
+                    customSubtitleFontChoose.setEnabled(enabled);
+                    return true;
+                });
+
+                customSubtitleFontChoose.setOnPreferenceClickListener(preference -> {
+                    if (customSubtitleFontPicker != null) {
+                        customSubtitleFontPicker.launch(CUSTOM_FONT_MIME_TYPES);
+                    }
+                    return true;
+                });
+            }
         }
 
         @Override
@@ -149,6 +205,93 @@ public class SettingsActivity extends AppCompatActivity {
             collator.setStrength(Collator.PRIMARY);
             Utils.orderByValue(languages, collator::compare);
             return languages;
+        }
+
+        private void handleCustomSubtitleFontPick(@Nullable android.net.Uri uri) {
+            if (uri == null) {
+                return;
+            }
+            if (getContext() == null) {
+                return;
+            }
+
+            File fontsDir = new File(requireContext().getFilesDir(), Prefs.SUBTITLE_CUSTOM_FONT_DIR);
+            if (!fontsDir.exists() && !fontsDir.mkdirs()) {
+                showCustomFontError();
+                return;
+            }
+
+            File fontFile = new File(fontsDir, Prefs.SUBTITLE_CUSTOM_FONT_FILE_NAME);
+            if (!copyFontToFile(uri, fontFile)) {
+                showCustomFontError();
+                return;
+            }
+
+            if (!isTypefaceValid(fontFile)) {
+                fontFile.delete();
+                showCustomFontError();
+                return;
+            }
+
+            String displayName = Utils.getFileName(requireContext(), uri, true);
+            if (displayName == null || displayName.trim().isEmpty()) {
+                displayName = fontFile.getName();
+            }
+
+            getPreferenceManager().getSharedPreferences()
+                    .edit()
+                    .putString(Prefs.PREF_KEY_SUBTITLE_CUSTOM_FONT_NAME, displayName)
+                    .apply();
+
+            updateCustomSubtitleFontSummary();
+        }
+
+        private boolean copyFontToFile(android.net.Uri uri, File destination) {
+            try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
+                 OutputStream outputStream = new FileOutputStream(destination, false)) {
+                if (inputStream == null) {
+                    return false;
+                }
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, read);
+                }
+                return true;
+            } catch (IOException | SecurityException e) {
+                Log.w(Utils.TAG, e);
+                return false;
+            }
+        }
+
+        private boolean isTypefaceValid(File fontFile) {
+            try {
+                Typeface typeface = Typeface.createFromFile(fontFile);
+                return typeface != null;
+            } catch (RuntimeException e) {
+                Log.w(Utils.TAG, e);
+                return false;
+            }
+        }
+
+        private void updateCustomSubtitleFontSummary() {
+            if (customSubtitleFontChoose == null) {
+                return;
+            }
+            String fontName = getPreferenceManager().getSharedPreferences()
+                    .getString(Prefs.PREF_KEY_SUBTITLE_CUSTOM_FONT_NAME, null);
+            if (fontName == null || fontName.trim().isEmpty()) {
+                customSubtitleFontChoose.setSummary(R.string.pref_custom_subtitle_font_not_set);
+            } else {
+                customSubtitleFontChoose.setSummary(fontName);
+            }
+        }
+
+        private void showCustomFontError() {
+            if (getContext() == null) {
+                return;
+            }
+            Toast.makeText(requireContext(), R.string.pref_custom_subtitle_font_failed, Toast.LENGTH_SHORT).show();
         }
     }
 }

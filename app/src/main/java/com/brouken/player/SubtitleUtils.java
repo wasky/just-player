@@ -7,8 +7,10 @@ import android.graphics.Typeface;
 import android.graphics.fonts.FontStyle;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.view.accessibility.CaptioningManager;
 
+import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
@@ -32,7 +34,7 @@ class SubtitleUtils {
             return MimeTypes.TEXT_SSA;
         } else if (path.endsWith(".vtt")) {
             return MimeTypes.TEXT_VTT;
-        } else if (path.endsWith(".ttml") ||  path.endsWith(".xml") || path.endsWith(".dfxp")) {
+        } else if (path.endsWith(".ttml") || path.endsWith(".xml") || path.endsWith(".dfxp")) {
             return MimeTypes.APPLICATION_TTML;
         } else {
             return MimeTypes.APPLICATION_SUBRIP;
@@ -345,9 +347,23 @@ class SubtitleUtils {
         }
     }
 
+    @Nullable
+    public static Typeface loadCustomSubtitleTypeface(Context context, Prefs prefs) {
+        if (!prefs.subtitleCustomFontEnabled) return null;
+        File fontFile = new File(new File(context.getFilesDir(), Prefs.SUBTITLE_CUSTOM_FONT_DIR), Prefs.SUBTITLE_CUSTOM_FONT_FILE_NAME);
+        if (!fontFile.exists()) return null;
+        try {
+            return Typeface.createFromFile(fontFile);
+        } catch (RuntimeException e) {
+            Log.w(Utils.TAG, e);
+            return null;
+        }
+    }
+
     @SuppressLint("InlinedApi")
-    public static Typeface getSubtitleTypeface(SubtitleTypeface subtitleTypeface, CaptionStyleCompat userCaptionStyle) {
-        Typeface userTypeface = userCaptionStyle.typeface != null ? userCaptionStyle.typeface : Typeface.DEFAULT;
+    public static Typeface getSubtitleTypeface(SubtitleTypeface subtitleTypeface, CaptionStyleCompat userCaptionStyle, @Nullable Typeface customTypeface) {
+        Typeface userTypeface = customTypeface != null ? customTypeface :
+                (userCaptionStyle.typeface != null ? userCaptionStyle.typeface : Typeface.DEFAULT);
         switch (subtitleTypeface) {
             case Regular:
                 return Typeface.create(userTypeface, Typeface.NORMAL);
@@ -360,7 +376,7 @@ class SubtitleUtils {
             case Bold:
                 return Typeface.create(userTypeface, Typeface.BOLD);
             default:
-                throw new IllegalArgumentException("Unknown subtitleTypeface: "+subtitleTypeface);
+                throw new IllegalArgumentException("Unknown subtitleTypeface: " + subtitleTypeface);
         }
     }
 }

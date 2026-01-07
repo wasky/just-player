@@ -53,6 +53,10 @@
     <string name="pref_language_track_default">Default</string>
     <string name="pref_subtitle_header">Subtitle</string>
     <string name="pref_subtitle_message">Additional subtitle settings are available during playback by long-pressing the subtitles icon</string>
+    <string name="pref_custom_subtitle_font">Custom subtitle font</string>
+    <string name="pref_choose_custom_font">Choose custom font</string>
+    <string name="pref_custom_subtitle_font_not_set">No custom font selected</string>
+    <string name="pref_custom_subtitle_font_failed">Unable to load font</string>
     <string name="osd_item_integer_default">@string/pref_language_track_default</string>
     <string name="osd_item_boolean_true">On</string>
     <string name="osd_item_boolean_false">Off</string>

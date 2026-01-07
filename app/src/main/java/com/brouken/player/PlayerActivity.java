@@ -2055,7 +2055,8 @@ public class PlayerActivity extends Activity {
             final CaptioningManager.CaptionStyle userStyle = captioningManager.getUserStyle();
             final CaptionStyleCompat userStyleCompat = CaptionStyleCompat.createFromCaptionStyle(userStyle);
             final int edgeColor = userStyle.hasEdgeColor() ? userStyleCompat.edgeColor : Color.BLACK;
-            final Typeface typeface = SubtitleUtils.getSubtitleTypeface(mPrefs.subtitleTypeface, userStyleCompat);
+            final Typeface customTypeface = SubtitleUtils.loadCustomSubtitleTypeface(context, mPrefs);
+            final Typeface typeface = SubtitleUtils.getSubtitleTypeface(mPrefs.subtitleTypeface, userStyleCompat, customTypeface);
             final CaptionStyleCompat captionStyle = new CaptionStyleCompat(
                     userStyle.hasForegroundColor() ? userStyleCompat.foregroundColor : Color.WHITE,
                     userStyle.hasBackgroundColor() ? userStyleCompat.backgroundColor : Color.TRANSPARENT,
@@ -2464,6 +2465,8 @@ public class PlayerActivity extends Activity {
             case Prefs.PREF_KEY_SUBTITLE_EDGE_TYPE:
             case Prefs.PREF_KEY_SUBTITLE_TYPEFACE:
             case Prefs.PREF_KEY_SUBTITLE_STYLE_EMBEDDED:
+            case Prefs.PREF_KEY_SUBTITLE_CUSTOM_FONT_ENABLED:
+            case Prefs.PREF_KEY_SUBTITLE_CUSTOM_FONT_NAME:
                 updateSubtitleStyle(PlayerActivity.this);
                 break;
             default:

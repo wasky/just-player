@@ -61,7 +61,12 @@ public class Prefs {
     static final String PREF_KEY_SUBTITLE_VERTICAL_POSITION = "subtitleVerticalPosition";
     static final String PREF_KEY_SUBTITLE_SIZE = "subtitleSize";
     static final String PREF_KEY_SUBTITLE_EDGE_TYPE = "subtitleEdgeType";
+    static final String PREF_KEY_SUBTITLE_CUSTOM_FONT_ENABLED = "subtitleCustomFontEnabled";
+    static final String PREF_KEY_SUBTITLE_CUSTOM_FONT_NAME = "subtitleCustomFontName";
     private static final String PREF_KEY_SUBTITLE_DELAY_MAP = "subtitleDelayMap";
+
+    static final String SUBTITLE_CUSTOM_FONT_DIR = "fonts";
+    static final String SUBTITLE_CUSTOM_FONT_FILE_NAME = "custom_subtitle_font";
 
     private static final int MAX_SUBTITLE_DELAY_ENTRIES = 25;
 
@@ -102,6 +107,8 @@ public class Prefs {
     public int subtitleSize = 0;
     public SubtitleEdgeType subtitleEdgeType = SubtitleEdgeType.Default;
     public SubtitleTypeface subtitleTypeface = SubtitleTypeface.Regular;
+    public boolean subtitleCustomFontEnabled;
+    public String subtitleCustomFontName;
 
     private LinkedHashMap positions;
     private final LinkedHashMap<String, Integer> subtitleDelayMap = new LinkedHashMap<>();
@@ -165,6 +172,8 @@ public class Prefs {
         subtitleSize = mSharedPreferences.getInt(PREF_KEY_SUBTITLE_SIZE, subtitleSize);
         subtitleEdgeType = valueOfEnum(SubtitleEdgeType.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_EDGE_TYPE, null), subtitleEdgeType);
         subtitleTypeface = valueOfEnum(SubtitleTypeface.class, mSharedPreferences.getString(PREF_KEY_SUBTITLE_TYPEFACE, null), subtitleTypeface);
+        subtitleCustomFontEnabled = mSharedPreferences.getBoolean(PREF_KEY_SUBTITLE_CUSTOM_FONT_ENABLED, subtitleCustomFontEnabled);
+        subtitleCustomFontName = mSharedPreferences.getString(PREF_KEY_SUBTITLE_CUSTOM_FONT_NAME, subtitleCustomFontName);
     }
 
     public void updateMedia(final Context context, final Uri uri, final String type) {
