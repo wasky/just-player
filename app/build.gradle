@@ -24,7 +24,6 @@ android {
         targetSdkVersion 36
         versionCode 1
         versionName "3.0"
-        archivesBaseName = "just_player_plus"
         if (abiFilter) {
             def abiCodeMap = ["x86": 1, "x86_64": 2, "armeabi-v7a": 3, "arm64-v8a": 4]
             versionCode = versionCode * 10 + abiCodeMap[abiFilter]
@@ -32,6 +31,9 @@ android {
                 abiFilters abiFilter
             }
         }
+    }
+    base {
+        archivesName = "just_player_plus"
     }
     buildTypes {
         debug {
@@ -75,12 +77,12 @@ android {
     applicationVariants.all { variant ->
         if (variant.buildType.name == "release" && variant.flavorName == "latestUniversal") {
             variant.outputs.all { output ->
-                output.outputFileName = "${archivesBaseName}.apk"
+                output.outputFileName = "${base.archivesName.get()}.apk"
             }
         }
         if (variant.buildType.name == "release" && variant.flavorName == "legacyUniversal") {
             variant.outputs.all { output ->
-                output.outputFileName = "${archivesBaseName}-legacy.apk"
+                output.outputFileName = "${base.archivesName.get()}-legacy.apk"
             }
         }
     }
@@ -101,7 +103,7 @@ android {
 }
 
 dependencies {
-    def media3_version = '1.9.0'
+    def media3_version = '1.10.0'
     def androidxCoreVersion = '1.8.0'
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-datasource:$media3_version"
@@ -129,7 +131,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'com.squareup.okhttp3:okhttp:5.3.2'
-    implementation 'com.sigpwned:chardet4j:77.1.0'
+    implementation 'com.sigpwned:chardet4j:78.1.0'
     implementation project(path: ':doubletapplayerview')
     implementation project(path: ':android-file-chooser')
     implementation fileTree(dir: "libs", include: ["lib-*.aar"])
