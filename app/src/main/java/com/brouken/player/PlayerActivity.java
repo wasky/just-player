@@ -118,6 +118,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerActivity extends Activity {
 
@@ -185,6 +186,7 @@ public class PlayerActivity extends Activity {
     private long scrubbingStart;
     public boolean frameRendered;
     private boolean alive;
+    private final AtomicInteger subtitleDelayMs = new AtomicInteger();
     private final Runnable subtitleDelayApplyRunnable = this::applySubtitleDelay;
     public static boolean focusPlay = false;
     private Uri nextUri;
@@ -1284,9 +1286,10 @@ public class PlayerActivity extends Activity {
 
         double videoFrameRate = Utils.getFrameRate(this, mPrefs.mediaUri);
         int subtitleDelay = mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri);
+        subtitleDelayMs.set(subtitleDelay);
 
         SubtitleParser.Factory subtitleParserFactory =
-                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(videoFrameRate), subtitleDelay);
+                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(videoFrameRate), subtitleDelayMs);
 
         // https://github.com/google/ExoPlayer/issues/8571
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory()
@@ -2094,10 +2097,19 @@ public class PlayerActivity extends Activity {
     }
 
     private void applySubtitleDelay() {
-        boolean shouldRestorePlayState = restorePlayState || (player != null && player.getPlayWhenReady());
-        savePlayer();
-        restorePlayState = shouldRestorePlayState;
-        initializePlayer();
+        int newDelayMs = mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri);
+        subtitleDelayMs.set(newDelayMs);
+
+        if (player != null) {
+            MediaItem currentItem = player.getCurrentMediaItem();
+            if (currentItem != null) {
+                long currentPos = player.getCurrentPosition();
+                boolean playWhenReady = player.getPlayWhenReady();
+                player.setMediaItem(currentItem, currentPos);
+                player.setPlayWhenReady(playWhenReady);
+                player.prepare();
+            }
+        }
     }
 
     void searchSubtitles() {

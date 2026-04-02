@@ -9,15 +9,16 @@ import androidx.media3.extractor.text.CuesWithTiming;
 import androidx.media3.extractor.text.SubtitleParser;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class OffsetSubtitleParserFactory implements SubtitleParser.Factory {
 
     private final SubtitleParser.Factory delegate;
-    private final long delayUs;
+    private final AtomicInteger delayMs;
 
-    public OffsetSubtitleParserFactory(SubtitleParser.Factory delegate, int delayMs) {
+    public OffsetSubtitleParserFactory(SubtitleParser.Factory delegate, AtomicInteger delayMs) {
         this.delegate = delegate;
-        this.delayUs = TimeUnit.MILLISECONDS.toMicros(delayMs);
+        this.delayMs = delayMs;
     }
 
     @Override
@@ -34,27 +35,31 @@ public final class OffsetSubtitleParserFactory implements SubtitleParser.Factory
     @Override
     public SubtitleParser create(@NonNull Format format) {
         SubtitleParser parser = delegate.create(format);
-        if (delayUs == 0) return parser;
-        return new OffsetSubtitleParser(parser, delayUs);
+        return new OffsetSubtitleParser(parser, delayMs);
     }
 
     private static final class OffsetSubtitleParser implements SubtitleParser {
 
         private final SubtitleParser delegate;
-        private final long delayUs;
+        private final AtomicInteger delayMs;
 
-        private OffsetSubtitleParser(SubtitleParser delegate, long delayUs) {
+        private OffsetSubtitleParser(SubtitleParser delegate, AtomicInteger delayMs) {
             this.delegate = delegate;
-            this.delayUs = delayUs;
+            this.delayMs = delayMs;
         }
 
         @Override
         public void parse(@NonNull byte[] data, int offset, int length, @NonNull OutputOptions outputOptions, @NonNull Consumer<CuesWithTiming> output) {
-            OutputOptions adjustedOptions = adjustOutputOptions(outputOptions);
-            delegate.parse(data, offset, length, adjustedOptions, cuesWithTiming -> {
-                CuesWithTiming shifted = shiftCues(cuesWithTiming);
-                if (shifted != null) output.accept(shifted);
-            });
+            long delayUs = TimeUnit.MILLISECONDS.toMicros(delayMs.get());
+            if (delayUs == 0) {
+                delegate.parse(data, offset, length, outputOptions, output);
+            } else {
+                OutputOptions adjustedOptions = adjustOutputOptions(outputOptions, delayUs);
+                delegate.parse(data, offset, length, adjustedOptions, cuesWithTiming -> {
+                    CuesWithTiming shifted = shiftCues(cuesWithTiming, delayUs);
+                    if (shifted != null) output.accept(shifted);
+                });
+            }
         }
 
         @Override
@@ -67,7 +72,7 @@ public final class OffsetSubtitleParserFactory implements SubtitleParser.Factory
             return delegate.getCueReplacementBehavior();
         }
 
-        private OutputOptions adjustOutputOptions(OutputOptions outputOptions) {
+        private OutputOptions adjustOutputOptions(OutputOptions outputOptions, long delayUs) {
             if (outputOptions.startTimeUs == C.TIME_UNSET) return outputOptions;
 
             long adjustedStartUs = outputOptions.startTimeUs - delayUs;
@@ -81,7 +86,7 @@ public final class OffsetSubtitleParserFactory implements SubtitleParser.Factory
         }
 
         @Nullable
-        private CuesWithTiming shiftCues(CuesWithTiming cuesWithTiming) {
+        private CuesWithTiming shiftCues(CuesWithTiming cuesWithTiming, long delayUs) {
             long startTimeUs = cuesWithTiming.startTimeUs;
             if (startTimeUs == C.TIME_UNSET) return cuesWithTiming;
 
