@@ -6,10 +6,15 @@ import androidx.media3.common.MimeTypes;
 import androidx.media3.extractor.text.DefaultSubtitleParserFactory;
 import androidx.media3.extractor.text.SubtitleParser;
 
+import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public final class EnhancedSubtitleParserFactory implements SubtitleParser.Factory {
 
+    private volatile double fallbackFrameRate;
     private final DefaultSubtitleParserFactory defaultFactory = new DefaultSubtitleParserFactory();
-    private final double fallbackFrameRate;
+    private final List<WeakReference<MicroDvdParser>> microDvdParsers = new CopyOnWriteArrayList<>();
 
     public EnhancedSubtitleParserFactory(double fallbackFrameRate) {
         this.fallbackFrameRate = fallbackFrameRate;
@@ -39,7 +44,29 @@ public final class EnhancedSubtitleParserFactory implements SubtitleParser.Facto
                 fallbackParser = defaultFactory.create(format);
                 break;
         }
-        return new MicroDvdParser(format, fallbackParser, fallbackFrameRate);
+        final MicroDvdParser microDvdParser = new MicroDvdParser(format, fallbackParser, fallbackFrameRate);
+        pruneStaleParsers();
+        microDvdParsers.add(new WeakReference<>(microDvdParser));
+        return microDvdParser;
+    }
+
+    public boolean setFallbackFrameRate(double newFallbackFrameRate) {
+        if (newFallbackFrameRate == fallbackFrameRate) return false;
+        fallbackFrameRate = newFallbackFrameRate;
+        pruneStaleParsers();
+
+        for (WeakReference<MicroDvdParser> microDvdParser : microDvdParsers) {
+            MicroDvdParser parser = microDvdParser.get();
+            if (parser != null && parser.isSubtitleReloadNeeded(newFallbackFrameRate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void pruneStaleParsers() {
+        microDvdParsers.removeIf(microDvdParserWeakReference -> microDvdParserWeakReference.get() == null);
     }
 
 }

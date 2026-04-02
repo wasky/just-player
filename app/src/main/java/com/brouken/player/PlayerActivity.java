@@ -120,6 +120,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import kotlin.Unit;
+
 public class PlayerActivity extends Activity {
 
     private PlayerListener playerListener;
@@ -1284,12 +1286,12 @@ public class PlayerActivity extends Activity {
             );
         }
 
-        double videoFrameRate = Utils.getFrameRate(this, mPrefs.mediaUri);
         int subtitleDelay = mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri);
         subtitleDelayMs.set(subtitleDelay);
 
+        EnhancedSubtitleParserFactory enhancedSubtitleParserFactory = new EnhancedSubtitleParserFactory(0);
         SubtitleParser.Factory subtitleParserFactory =
-                new OffsetSubtitleParserFactory(new EnhancedSubtitleParserFactory(videoFrameRate), subtitleDelayMs);
+                new OffsetSubtitleParserFactory(enhancedSubtitleParserFactory, subtitleDelayMs);
 
         // https://github.com/google/ExoPlayer/issues/8571
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory()
@@ -1332,6 +1334,13 @@ public class PlayerActivity extends Activity {
                 .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
                 .build();
         player.setAudioAttributes(audioAttributes, true);
+
+        UtilsKt.calculateFrameRateOnTheFly(player, frameRate -> {
+            if (enhancedSubtitleParserFactory.setFallbackFrameRate(frameRate)) {
+                restartPlayback();
+            }
+            return Unit.INSTANCE;
+        });
 
         if (mPrefs.skipSilence) {
             player.setSkipSilenceEnabled(true);
@@ -2099,7 +2108,11 @@ public class PlayerActivity extends Activity {
     private void applySubtitleDelay() {
         int newDelayMs = mPrefs.getSubtitleDelayForUri(mPrefs.mediaUri);
         subtitleDelayMs.set(newDelayMs);
+        restartPlayback();
+    }
 
+    private void restartPlayback() {
+        if (BuildConfig.DEBUG) Utils.log("Restarting playback");
         if (player != null) {
             MediaItem currentItem = player.getCurrentMediaItem();
             if (currentItem != null) {

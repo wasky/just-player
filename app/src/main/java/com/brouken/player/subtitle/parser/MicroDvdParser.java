@@ -220,6 +220,12 @@ public final class MicroDvdParser implements SubtitleParser {
         return fallbackFrameRate;
     }
 
+    public boolean isSubtitleReloadNeeded(double newFallbackFrameRate) {
+        if (headerFrameRate > 0) return false;
+        if (subtitleFormat != SubtitleFormat.MICRO_DVD) return false;
+        return newFallbackFrameRate != fallbackFrameRate;
+    }
+
     private void applyFrameRateHeader(String text) {
         String trimmedText = text.trim();
         if (trimmedText.startsWith("23.97")) {
