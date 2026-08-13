@@ -25,6 +25,8 @@ public final class SubtitleDelayOsdSettingsItem extends IntegerOsdSettingsItem {
 
         if (value < 0 && totalTenths > 0) {
             return "- " + formatted;
+        } else if (value > 0 && totalTenths > 0) {
+            return "+ " + formatted;
         } else {
             return formatted;
         }

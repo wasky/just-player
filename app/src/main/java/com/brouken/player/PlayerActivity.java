@@ -104,7 +104,7 @@ import com.brouken.player.dtpv.youtube.YouTubeOverlay;
 import com.brouken.player.osd.OsdSettingsController;
 import com.brouken.player.subtitle.CueModifier;
 import com.brouken.player.subtitle.parser.EnhancedSubtitleParserFactory;
-import com.brouken.player.subtitle.parser.OffsetSubtitleParserFactory;
+import com.brouken.player.subtitle.SubtitleDelayRenderersFactory;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.snackbar.Snackbar;
@@ -1290,8 +1290,7 @@ public class PlayerActivity extends Activity {
         subtitleDelayMs.set(subtitleDelay);
 
         EnhancedSubtitleParserFactory enhancedSubtitleParserFactory = new EnhancedSubtitleParserFactory(0);
-        SubtitleParser.Factory subtitleParserFactory =
-                new OffsetSubtitleParserFactory(enhancedSubtitleParserFactory, subtitleDelayMs);
+        SubtitleParser.Factory subtitleParserFactory = enhancedSubtitleParserFactory;
 
         // https://github.com/google/ExoPlayer/issues/8571
         DefaultExtractorsFactory extractorsFactory = new DefaultExtractorsFactory()
@@ -1299,7 +1298,7 @@ public class PlayerActivity extends Activity {
                 .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE)
                 .setSubtitleParserFactory(subtitleParserFactory);
 
-        @SuppressLint("WrongConstant") RenderersFactory renderersFactory = new DefaultRenderersFactory(this)
+        @SuppressLint("WrongConstant") RenderersFactory renderersFactory = new SubtitleDelayRenderersFactory(this, subtitleDelayMs)
                 .setExtensionRendererMode(mPrefs.decoderPriority)
                 .setMapDV7ToHevc(mPrefs.mapDV7ToHevc);
 
