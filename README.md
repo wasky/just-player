@@ -1,8 +1,17 @@
-# Just Player+
+# Just Player Morveus
 
-This is a modified version of [Just Player](https://github.com/moneytoo/Player) with additional features.
+Personal fork of [Just Player+](https://github.com/wasky/just-player-plus) (itself a modified [Just Player](https://github.com/moneytoo/Player)), tweaked for my own setup.
 
-## Changes compared to the original Just Player app
+## Changes compared to Just Player+
+
+* Renamed to **Just Player Morveus** with application id `com.morveus.player`, so it installs alongside the original Just Player+ without any conflict
+* Subtitle delay adjusts in **100 ms** steps instead of 200 ms
+* **Fixed subtitle delay for embedded subtitles**: the delay is now applied at render time instead of parse time. Previously, negative delays could not move embedded subtitles (MKV) earlier: they only shortened the on-screen duration, and past roughly -2 s subtitles disappeared entirely. It now works in both directions, for embedded, external and image-based (PGS/VobSub) subtitles
+* Positive delay values are shown with a `+` prefix in the OSD
+
+Subtitle delay is reachable by long-pressing the subtitle icon on the playback screen. Right arrow (+) shows subtitles later, left arrow (-) shows them earlier, like in Kodi.
+
+## Features inherited from Just Player+
 
 ### Additional subtitle settings on the playback screen
 
@@ -18,13 +27,15 @@ This is a modified version of [Just Player](https://github.com/moneytoo/Player) 
   * Typeface: `Medium`
 * Custom fonts for subtitles
 
-<img src="https://github.com/user-attachments/assets/b98be7fa-f38c-4ab5-aea0-d580b69f40e1" width="800">
-
 ### Other changes
 
 * Fix subtitle encoding when used as an external player with Nova Video Player
 * The Back button hides media controls instead of quitting the app on Android TV
 
-## How to install
+## How to build
 
-Download the APK file from the [Releases page](https://github.com/wasky/just-player/releases) and open it on your device.
+```
+./gradlew :app:assembleLatestUniversalRelease
+```
+
+The APK ends up in `app/build/outputs/apk/latestUniversal/release/just_player_morveus.apk`.
