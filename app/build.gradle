@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         def abiFilter = project.findProperty("abiFilter")
-        applicationId "pl.waskysoft.player"
+        applicationId "com.morveus.player"
         minSdkVersion 25
         targetSdkVersion 36
         versionCode 1
@@ -32,7 +32,7 @@ android {
         }
     }
     base {
-        archivesName = "just_player_plus"
+        archivesName = "just_player_morveus"
     }
     buildTypes {
         debug {
